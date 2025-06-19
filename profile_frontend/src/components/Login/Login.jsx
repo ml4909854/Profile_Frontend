@@ -1,59 +1,52 @@
-import React, { useState } from 'react';
-import './Login.css';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { lazy } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
+import './Layout.css';
 
-const Login = () => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+const Layout = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
   const navigate = useNavigate();
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setIsLoggedIn(!!localStorage.getItem('token'));
+    };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await axios.post(`${backendUrl}/user/login`, formData);
-      if (res.status === 200) {
-        alert('Login successful!');
-        localStorage.setItem('token', res.data.token);
-        localStorage.setItem('userId', res.data.userId);
-        console.log(res)
-        
-        navigate('/profile'); 
-      }
-    } catch (error) {
-      alert(error.response?.data?.message || 'Login failed!');
-    }
+    // Custom login/logout event listeners
+    window.addEventListener('login', handleStorageChange);
+    window.addEventListener('logout', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('login', handleStorageChange);
+      window.removeEventListener('logout', handleStorageChange);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+    window.dispatchEvent(new Event('logout')); // notify others
+    navigate('/login');
   };
 
   return (
-    <div className="login-container">
-      <form className="login-form" onSubmit={handleSubmit}>
-        <h2>Login</h2>
-        <input
-          type="email"
-          name="email"
-          placeholder="Enter your email"
-          required
-          value={formData.email}
-          onChange={handleChange}
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Enter your password"
-          required
-          value={formData.password}
-          onChange={handleChange}
-        />
-        <button type="submit">Login</button>
-      </form>
-    </div>
+    <>
+      <nav>
+        <Link to="/">Home</Link>
+        {!isLoggedIn ? (
+          <>
+            <Link to="/login">Login</Link>
+            <Link to="/signup">Signup</Link>
+          </>
+        ) : (
+          <>
+            <Link to="/profile">Profile</Link>
+            <button onClick={handleLogout} className="logout-btn">Logout</button>
+          </>
+        )}
+      </nav>
+      <Outlet />
+    </>
   );
 };
 
-export default Login;
+export default Layout;
