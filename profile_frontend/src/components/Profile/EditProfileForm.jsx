@@ -128,6 +128,8 @@ const EditProfileForm = ({ profile, onClose }) => {
           Cancel
         </button>
       </div>
+    <h4>Image size must we less than 1MB. Otherwise it gives error!</h4>
+
     </form>
   );
 };
