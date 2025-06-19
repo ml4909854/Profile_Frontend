@@ -3,23 +3,7 @@ import { Link, Outlet, useNavigate } from 'react-router-dom';
 import './Layout.css';
 
 const Layout = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleStorageChange = () => {
-      setIsLoggedIn(!!localStorage.getItem('token'));
-    };
-
-    // Custom login/logout event listeners
-    window.addEventListener('login', handleStorageChange);
-    window.addEventListener('logout', handleStorageChange);
-
-    return () => {
-      window.removeEventListener('login', handleStorageChange);
-      window.removeEventListener('logout', handleStorageChange);
-    };
-  }, []);
+  const token = localStorage.getItem("token")
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -32,15 +16,17 @@ const Layout = () => {
     <>
       <nav>
         <Link to="/">Home</Link>
-        {!isLoggedIn ? (
+        {token ? (
           <>
+            <Link to="/profile">Profile</Link>
+            <button onClick={handleLogout} className="logout-btn">Logout</button>
             <Link to="/login">Login</Link>
             <Link to="/signup">Signup</Link>
           </>
         ) : (
           <>
-            <Link to="/profile">Profile</Link>
-            <button onClick={handleLogout} className="logout-btn">Logout</button>
+           <Link to="/login">Login</Link>
+            <Link to="/signup">Signup</Link>
           </>
         )}
       </nav>
